@@ -1,18 +1,19 @@
+import asyncio
+import inspect
+from functools import cached_property
+
 import discord
 from discord.ext import commands, menus
-import config
-import asyncio
-from functools import cached_property
-import inspect
 
+from utils import constants
 
-NAME = config.emojis['name']
-LIMIT = config.emojis['limit']
-POSITION = config.emojis['position']
-BITRATE = config.emojis['bitrate']
-CATEGORY = config.emojis['category']
-HELP = config.emojis['help']
-EXIT = config.emojis['exit']
+NAME = constants.emojis['name']
+LIMIT = constants.emojis['limit']
+POSITION = constants.emojis['position']
+BITRATE = constants.emojis['bitrate']
+CATEGORY = constants.emojis['category']
+HELP = constants.emojis['help']
+EXIT = constants.emojis['exit']
 
 
 class EditMenu(menus.Menu):
@@ -179,7 +180,7 @@ class EditMenu(menus.Menu):
             self.help = False
         else:
             embed = discord.Embed(
-                title=f'Information',
+                title='Information',
                 description='In this menu you can change the auto-channel settings.\n'
                             'You can use the buttons below to do the following actions:',
                 color=self.ctx.guild.me.color
@@ -259,7 +260,7 @@ class Settings(commands.Cog):
     async def add(self, ctx, *, channel: discord.VoiceChannel):
         """Adds a voice channel to the auto-channels."""
         if str(channel.id) in ctx.bot.configs:
-            raise commands.BadArgument(f'This channel has already been added.')
+            raise commands.BadArgument('This channel has already been added.')
         else:
             channels = [c for c in ctx.guild.voice_channels if str(c.id) in ctx.bot.configs]
             if len(channels) >= 25:
@@ -317,7 +318,7 @@ class Settings(commands.Cog):
                 name = settings.get('name', '@user\'s channel')
                 limit = settings.get('limit', 10)
                 position = 'top' if settings.get('top', False) else 'bottom'
-                bitrate = settings.get('limit', 64000)//1000
+                bitrate = settings.get('limit', 64000) // 1000
                 try:
                     category = ctx.guild.get_channel(settings['category'])
                 except KeyError:

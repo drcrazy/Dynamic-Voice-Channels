@@ -1,22 +1,22 @@
+import datetime
+import os
+import re
+import traceback
+from collections import Counter
+from contextlib import suppress
+
 import discord
 from discord.ext import commands, menus
-import config
-from cogs.help import HelpCommand
-from utils.jsonfile import JSONList, JSONDict
-from utils.context import Context
-from collections import Counter
-import datetime
-from contextlib import suppress
-import traceback
-import re
-import os
 
+from cogs.help import HelpCommand
+from utils.config import settings
+from utils.context import Context
+from utils.jsonfile import JSONDict, JSONList
 
 extensions = (
     "cogs.settings",
     "cogs.core",
     "cogs.voice",
-    "cogs.admin",
 )
 
 
@@ -33,14 +33,14 @@ class Bot(commands.Bot):
     def __init__(self):
         super().__init__(
             intents=intents,
-            command_prefix=lambda b, m: b.prefixes.get(str(m.guild.id), 'dvc!'),
+            command_prefix=lambda b, m: b.prefixes.get(str(m.guild.id), settings.command_prefix),
             help_command=HelpCommand(),
             case_insensitive=True,
-            owner_id=config.owner_id,
-            activity=discord.Activity(type=discord.ActivityType.watching, name='dvc!')
+            owner_id=settings.owner_id,
+            activity=discord.Activity(type=discord.ActivityType.listening, name=settings.command_prefix)
         )
         self.launched_at = None
-        self.client_id = config.client_id
+        self.client_id = settings.bot_client_id
 
         if not os.path.exists('data'):
             os.mkdir('data')
@@ -127,13 +127,13 @@ class Bot(commands.Bot):
             with suppress(discord.Forbidden):
                 await member.send(f'You are being rate limited. Try again in `{retry_after:.2f}` seconds.')
         else:
-            settings = self.configs[str(channel.id)]
-            name = settings.get('name', '@user\'s channel')
-            limit = settings.get('limit', 10)
-            bitrate = settings.get('bitrate', 64000)
-            top = settings.get('top', False)
+            configuration = self.configs[str(channel.id)]
+            name = configuration.get('name', '@user\'s channel')
+            limit = configuration.get('limit', 10)
+            bitrate = configuration.get('bitrate', 64000)
+            top = configuration.get('top', False)
             try:
-                category = member.guild.get_channel(settings['category'])
+                category = member.guild.get_channel(configuration['category'])
             except KeyError:
                 category = channel.category
             if '@user' in name:
@@ -147,11 +147,11 @@ class Bot(commands.Bot):
                     name = name.replace('@game', 'no game')
             if '@position' in name:
                 channels = [c for c in category.voice_channels if c.id in self.channels]
-                name = name.replace('@position', str(len(channels)+1))
+                name = name.replace('@position', str(len(channels) + 1))
             words = self.bad_words.get(str(member.guild.id), [])
             for word in words:
                 if word.casefold() in name.casefold():
-                    name = re.sub(word, '*'*len(word), name, flags=re.IGNORECASE)
+                    name = re.sub(word, '*' * len(word), name, flags=re.IGNORECASE)
             if len(name) > 100:
                 name = name[:97] + '...'
             if perms.manage_roles:
@@ -250,4 +250,4 @@ class Bot(commands.Bot):
 
 
 if __name__ == "__main__":
-    Bot().run(config.token)
+    Bot().run(settings.discord_token)

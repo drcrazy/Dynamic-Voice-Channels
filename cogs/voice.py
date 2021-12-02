@@ -1,8 +1,12 @@
+import typing
+
 import discord
 from discord.ext import commands
-from utils.checks import connected_to_voice, has_voice_permissions, bot_has_voice_permissions
-from utils.converters import StrRange, IntRange
-import typing
+
+from utils.checks import (
+    bot_has_voice_permissions, connected_to_voice, has_voice_permissions,
+)
+from utils.converters import IntRange, StrRange
 
 
 class BucketType(commands.BucketType):
@@ -24,7 +28,7 @@ class Voice(commands.Cog):
         words = ctx.bot.bad_words.get(str(ctx.guild.id), [])
         for word in words:
             if word in name:
-                name = name.replace(word, '*'*len(word))
+                name = name.replace(word, '*' * len(word))
         await ctx.author.voice.channel.edit(name=name)
         await ctx.safe_send(
             msg=f'Changed your voice channel\'s name from **{before}** to **{discord.utils.escape_markdown(name)}**.',
@@ -294,7 +298,7 @@ class Voice(commands.Cog):
         for target, overwrite in ctx.author.voice.channel.overwrites.items():
             if isinstance(target, discord.Member) and overwrite.manage_channels:
                 await ctx.safe_send(
-                    msg=f'You cannot claim the permissions of your channel.',
+                    msg='You cannot claim the permissions of your channel.',
                     color=discord.Color.red()
                 )
                 break
