@@ -17,18 +17,18 @@ class JSON:
         except FileNotFoundError:
             return default
 
-    def _dump(self):
-        temp = f'{self.path}-{uuid.uuid4()}.tmp'
-        with open(temp, 'w', encoding='utf-8') as tmp:
-            json.dump(self.copy(), tmp, ensure_ascii=True, separators=(',', ':'))
-        os.replace(temp, self.path)
-
     async def save(self):
         async with self.lock:
             await self.loop.run_in_executor(None, self._dump)
 
     def copy(self):
         raise NotImplementedError()
+
+    def _dump(self):
+        temp = f'{self.path}-{uuid.uuid4()}.tmp'
+        with open(temp, 'w', encoding='utf-8') as tmp:
+            json.dump(self.copy(), tmp, ensure_ascii=True, separators=(',', ':'))
+        os.replace(temp, self.path)
 
 
 class JSONList(list, JSON):

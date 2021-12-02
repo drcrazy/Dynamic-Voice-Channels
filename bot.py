@@ -154,12 +154,10 @@ class Bot(commands.Bot):
             if len(name) > 100:
                 name = name[:97] + '...'
             if perms.manage_roles:
-                overwrites = {member: discord.PermissionOverwrite(
-                    manage_channels=True,
-                    move_members=True
-                )}
+                overwrites = {member: discord.PermissionOverwrite(manage_channels=True, move_members=True)}
             else:
                 overwrites = None
+
             new_channel = await member.guild.create_voice_channel(
                 overwrites=overwrites,
                 name=name,

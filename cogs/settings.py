@@ -22,15 +22,6 @@ class EditMenu(menus.Menu):
         self.channel = channel
         self.help = False
 
-    def get_settings(self):
-        return self.bot.configs.get(str(self.channel.id), {})
-
-    async def set_settings(self, name, value):
-        settings = self.get_settings()
-        settings[name] = value
-        self.bot.configs[str(self.channel.id)] = settings
-        await self.bot.configs.save()
-
     @cached_property
     def main_menu(self):
         embed = discord.Embed(
@@ -44,6 +35,15 @@ class EditMenu(menus.Menu):
             entries.append(f'{emoji} {inspect.getdoc(button.action)}')
         embed.add_field(name='Options:', value='\n'.join(entries))
         return embed
+
+    def get_settings(self):
+        return self.bot.configs.get(str(self.channel.id), {})
+
+    async def set_settings(self, name, value):
+        settings = self.get_settings()
+        settings[name] = value
+        self.bot.configs[str(self.channel.id)] = settings
+        await self.bot.configs.save()
 
     async def send_initial_message(self, ctx, channel):
         return await ctx.send(embed=self.main_menu)
@@ -187,7 +187,7 @@ class EditMenu(menus.Menu):
             )
             embed.set_author(name=self.ctx.author, url=self.ctx.author.avatar_url)
             settings = self.get_settings()
-            name = settings.get('name', '@user\'s channel')
+            name = settings.get('name', "@user's channel")
             embed.add_field(
                 name=f'{NAME} Change the default name ({name})',
                 value='Lets you change the default name for created channels.\n'
@@ -297,46 +297,48 @@ class Settings(commands.Cog):
             menu = EditMenu(channel)
             await menu.start(ctx, wait=True)
 
-    @commands.command()
-    async def list(self, ctx):
+    @commands.command(aliases=['list'])
+    async def list_channels(self, ctx):
         """Lists all auto-channels with their settings."""
         configs = ctx.bot.configs.copy()
         channels = [c for c in ctx.guild.voice_channels if str(c.id) in configs]
         if len(channels) == 0:
             raise commands.CommandError("You haven't added any Channels yet.")
-        else:
-            perms = ctx.channel.permissions_for(ctx.guild.me)
-            if not perms.embed_links:
-                raise commands.BotMissingPermissions(['embed_links'])
-            embed = discord.Embed(
-                title='Auto-channels',
-                description='Here is a list with all auto-channels in this server.',
-                color=discord.Color.blue(),
+
+        perms = ctx.channel.permissions_for(ctx.guild.me)
+        if not perms.embed_links:
+            raise commands.BotMissingPermissions(['embed_links'])
+
+        embed = discord.Embed(
+            title='Auto-channels',
+            description='Here is a list with all auto-channels in this server.',
+            color=discord.Color.blue(),
+        )
+        for channel in channels:
+            settings = configs[str(channel.id)]
+            name = settings.get('name', "@user's channel")
+            limit = settings.get('limit', 10)
+            position = 'top' if settings.get('top', False) else 'bottom'
+            bitrate = settings.get('limit', 64000) // 1000
+            try:
+                category = ctx.guild.get_channel(settings['category'])
+            except KeyError:
+                category = channel.category
+            if category is None:
+                category = 'No category'
+            else:
+                category = category.name
+
+            embed.add_field(
+                name=channel.name,
+                value=f'Category: {category}\n'
+                      f'Name: {name}\n'
+                      f'Limit: `{limit}`\n'
+                      f'Bitrate: `{bitrate}`kbps\n'
+                      f'Position: at the {position}',
+                inline=False,
             )
-            for channel in channels:
-                settings = configs[str(channel.id)]
-                name = settings.get('name', "@user's channel")
-                limit = settings.get('limit', 10)
-                position = 'top' if settings.get('top', False) else 'bottom'
-                bitrate = settings.get('limit', 64000) // 1000
-                try:
-                    category = ctx.guild.get_channel(settings['category'])
-                except KeyError:
-                    category = channel.category
-                if category is None:
-                    category = 'No category'
-                else:
-                    category = category.name
-                embed.add_field(
-                    name=channel.name,
-                    value=f'Category: {category}\n'
-                          f'Name: {name}\n'
-                          f'Limit: `{limit}`\n'
-                          f'Bitrate: `{bitrate}`kbps\n'
-                          f'Position: at the {position}',
-                    inline=False,
-                )
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.has_permissions(manage_guild=True)

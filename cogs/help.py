@@ -34,6 +34,7 @@ class HelpCommand(commands.HelpCommand):
         close = get_close_matches(string, self.context.bot.all_commands, n=1)
         if close:
             msg += f' Did you mean **{close[0]}**?'
+
         return msg
 
     async def send_error_message(self, error):
@@ -43,20 +44,22 @@ class HelpCommand(commands.HelpCommand):
         entries = []
         for cog in self.context.bot.cogs.values():
             entries += await self.filter_commands(cog.get_commands())
+
         source = HelpSource(entries, key=lambda c: c.cog.qualified_name, per_page=4, sort=True)
         menu = menus.MenuPages(source, timeout=60, check_embeds=True, delete_message_after=True)
         await menu.start(self.context, wait=True)
 
     async def send_command_help(self, command):
         perms = self.context.channel.permissions_for(self.context.guild.me)
-        if perms.embed_links:
-            usage = self.context.prefix + command.name
-            if command.signature:
-                usage += ' ' + command.signature
-            await self.context.send(embed=discord.Embed(
-                title=usage,
-                description=command.help.format(prefix=self.context.prefix),
-                color=self.context.guild.me.color
-            ))
-        else:
+        if not perms.embed_links:
             raise commands.BotMissingPermissions(['embed_links'])
+
+        usage = self.context.prefix + command.name
+        if command.signature:
+            usage += ' ' + command.signature
+
+        await self.context.send(embed=discord.Embed(
+            title=usage,
+            description=command.help.format(prefix=self.context.prefix),
+            color=self.context.guild.me.color,
+        ))
