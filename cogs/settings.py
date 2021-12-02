@@ -370,13 +370,13 @@ class Settings(commands.Cog):
         """
         words = ctx.bot.bad_words.get(str(ctx.guild.id), [])
         if word is None:
-            if words:
-                await ctx.safe_send(
-                    msg=' '.join(f'||{w}||' for w in words),
-                    color=ctx.guild.me.color,
-                )
-            else:
+            if words is None:
                 raise commands.CommandError("You haven't added any words yet.")
+
+            await ctx.safe_send(
+                msg=' '.join(f'||{w}||' for w in words),
+                color=ctx.guild.me.color,
+            )
         else:
             if word in words:
                 raise commands.BadArgument('This word is already blacklisted.')
@@ -394,19 +394,20 @@ class Settings(commands.Cog):
     async def whitelist(self, ctx, *, word):
         """Removes a word from the blacklist."""
         words = ctx.bot.bad_words.get(str(ctx.guild.id), [])
-        if word in words:
-            if len(words) > 1:
-                words.remove(word)
-                ctx.bot.bad_words[str(ctx.guild.id)] = words
-            else:
-                ctx.bot.bad_words.pop(str(ctx.guild.id))
-            await ctx.bot.bad_words.save()
-            await ctx.safe_send(
-                msg='Removed the word from the Blacklist.',
-                color=discord.Color.green(),
-            )
-        else:
+        if word not in words:
             raise commands.BadArgument('This word is not blacklisted.')
+
+        if len(words) > 1:
+            words.remove(word)
+            ctx.bot.bad_words[str(ctx.guild.id)] = words
+        else:
+            ctx.bot.bad_words.pop(str(ctx.guild.id))
+
+        await ctx.bot.bad_words.save()
+        await ctx.safe_send(
+            msg='Removed the word from the Blacklist.',
+            color=discord.Color.green(),
+        )
 
 
 def setup(bot):

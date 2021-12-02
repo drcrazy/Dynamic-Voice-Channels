@@ -102,11 +102,11 @@ class Voice(commands.Cog):
             color=discord.Color.green(),
         )
 
-    @commands.command(usage='[member|role]')
+    @commands.command(usage='[member|role]', aliases=['open'])
     @bot_has_voice_permissions(manage_roles=True)
     @has_voice_permissions(manage_roles=True)
     @connected_to_voice()
-    async def open(self, ctx, *, target: typing.Union[discord.Member, discord.Role] = None):
+    async def open_channel(self, ctx, *, target: typing.Union[discord.Member, discord.Role] = None):
         """
         Removes the `connect` overwrite for a target in your channel.
         The target can either be a member or role.
