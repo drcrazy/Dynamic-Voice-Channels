@@ -31,8 +31,8 @@ class Voice(commands.Cog):
                 name = name.replace(word, '*' * len(word))
         await ctx.author.voice.channel.edit(name=name)
         await ctx.safe_send(
-            msg=f'Changed your voice channel\'s name from **{before}** to **{discord.utils.escape_markdown(name)}**.',
-            color=discord.Color.green()
+            msg=f"Changed your voice channel's name from **{before}** to **{discord.utils.escape_markdown(name)}**.",
+            color=discord.Color.green(),
         )
 
     @commands.command(aliases=['userlimit'])
@@ -47,8 +47,8 @@ class Voice(commands.Cog):
         before = ctx.author.voice.channel.user_limit
         await ctx.author.voice.channel.edit(user_limit=number)
         await ctx.safe_send(
-            msg=f'Changed your voice channel\'s limit from `{before}` to `{number}`.',
-            color=discord.Color.green()
+            msg=f"Changed your voice channel's limit from `{before}` to `{number}`.",
+            color=discord.Color.green(),
         )
 
     @commands.command()
@@ -62,14 +62,14 @@ class Voice(commands.Cog):
         if number > ctx.guild.bitrate_limit:
             await ctx.safe_send(
                 msg=f'The bitrate cannot be greater than `{int(ctx.guild.bitrate_limit)}`.',
-                color=discord.Color.red()
+                color=discord.Color.red(),
             )
         else:
             before = ctx.author.voice.channel.bitrate
             await ctx.author.voice.channel.edit(bitrate=number)
             await ctx.safe_send(
-                msg=f'Changed your voice channel\'s bitrate from `{before}` to `{number}`.',
-                color=discord.Color.green()
+                msg=f"Changed your voice channel's bitrate from `{before}` to `{number}`.",
+                color=discord.Color.green(),
             )
 
     @commands.command(usage='[member|role]')
@@ -99,7 +99,7 @@ class Voice(commands.Cog):
         await ctx.set_voice_permissions(target, connect=False)
         await ctx.safe_send(
             msg=f'Closed your channel for {mention}.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command(usage='[member|role]')
@@ -125,7 +125,7 @@ class Voice(commands.Cog):
         await ctx.set_voice_permissions(target, connect=None)
         await ctx.safe_send(
             msg=f'Opened your channel for {mention}.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command(usage='[member|role]')
@@ -152,7 +152,7 @@ class Voice(commands.Cog):
         await ctx.set_voice_permissions(target, connect=True)
         await ctx.safe_send(
             msg=f'Granted {mention} to join your channel.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command(usage='[member|role]')
@@ -178,7 +178,7 @@ class Voice(commands.Cog):
         await ctx.set_voice_permissions(target, view_channel=False)
         await ctx.safe_send(
             msg=f'Your channel is now hidden for {mention}.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command(usage='[member|role]')
@@ -204,7 +204,7 @@ class Voice(commands.Cog):
         await ctx.set_voice_permissions(target, view_channel=None)
         await ctx.safe_send(
             msg=f'Your channel is no longer hidden for {mention}.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command(usage='[member|role]')
@@ -230,7 +230,7 @@ class Voice(commands.Cog):
         await ctx.set_voice_permissions(target, view_channel=True)
         await ctx.safe_send(
             msg=f'Your channel now visible for {mention}.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command()
@@ -247,7 +247,7 @@ class Voice(commands.Cog):
             await member.move_to(None)
             await ctx.safe_send(
                 msg=f'Kicked {member.mention} from your channel.',
-                color=discord.Color.green()
+                color=discord.Color.green(),
             )
 
     @commands.command()
@@ -262,7 +262,7 @@ class Voice(commands.Cog):
         await ctx.set_voice_permissions(member, manage_channels=True, move_members=True, manage_roles=True)
         await ctx.safe_send(
             msg=f'Gave {member.mention} permissions.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command()
@@ -285,7 +285,7 @@ class Voice(commands.Cog):
         await ctx.author.voice.channel.edit(overwrites=overwrites)
         await ctx.safe_send(
             msg=f'Transferred permissions to {member.mention}.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command()
@@ -299,14 +299,14 @@ class Voice(commands.Cog):
             if isinstance(target, discord.Member) and overwrite.manage_channels:
                 await ctx.safe_send(
                     msg='You cannot claim the permissions of your channel.',
-                    color=discord.Color.red()
+                    color=discord.Color.red(),
                 )
                 break
         else:
             await ctx.set_voice_permissions(ctx.author, manage_channels=True)
             await ctx.safe_send(
                 msg='You claimed the permissions of your voice channel.',
-                color=discord.Color.green()
+                color=discord.Color.green(),
             )
 
 

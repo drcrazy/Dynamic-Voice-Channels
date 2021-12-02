@@ -5,5 +5,5 @@ emojis = {
     'position': '🇵',
     'bitrate': '🇧',
     'help': '🇭',
-    'exit': '🇪'
+    'exit': '🇪',
 }

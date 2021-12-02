@@ -35,7 +35,7 @@ class EditMenu(menus.Menu):
     def main_menu(self):
         embed = discord.Embed(
             description=f'Editing **{self.channel.name}**',
-            color=self.ctx.guild.me.color
+            color=self.ctx.guild.me.color,
         )
         embed.set_author(name=self.ctx.author, icon_url=self.ctx.author.avatar_url)
         embed.set_footer(text='Please react with an emoji to continue.')
@@ -52,7 +52,7 @@ class EditMenu(menus.Menu):
         message = await self.bot.wait_for(
             'message',
             check=lambda m: m.author == self.ctx.author and m.channel == self.ctx.channel,
-            timeout=60
+            timeout=60,
         )
         if not self._running:
             raise asyncio.TimeoutError()
@@ -183,7 +183,7 @@ class EditMenu(menus.Menu):
                 title='Information',
                 description='In this menu you can change the auto-channel settings.\n'
                             'You can use the buttons below to do the following actions:',
-                color=self.ctx.guild.me.color
+                color=self.ctx.guild.me.color,
             )
             embed.set_author(name=self.ctx.author, url=self.ctx.author.avatar_url)
             settings = self.get_settings()
@@ -194,28 +194,28 @@ class EditMenu(menus.Menu):
                       'Use @user to reference the user who created the channel.\n'
                       'Use @game to reference the game the user is playing.\n'
                       'Use @position to reference the amount of created channels in this category.',
-                inline=False
+                inline=False,
             )
             limit = settings.get('limit', 10)
             embed.add_field(
                 name=f'{LIMIT} Set the default limit ({limit})',
                 value='Sets the default limit for created channels.\n'
                       'Must be between `0` and `99`. Use `0` to remove the user limit.',
-                inline=False
+                inline=False,
             )
             bitrate = settings.get('bitrate', 64000)
             embed.add_field(
                 name=f'{BITRATE} Set the default bitrate ({(bitrate//1000)}kbps)',
                 value='Sets the default bitrate for created channels.\n'
                       f'Must be between `8000` and `{int(self.channel.guild.bitrate_limit)}`.',
-                inline=False
+                inline=False,
             )
             pos = 'top' if settings.get('top', False) else 'bottom'
             embed.add_field(
                 name=f'{POSITION} Change the position ({pos})',
                 value='Changes the position channels are created at.\n'
                       'This can either be above or below the auto-channel.',
-                inline=False
+                inline=False,
             )
             try:
                 category = self.ctx.guild.get_channel(settings['category'])
@@ -228,7 +228,7 @@ class EditMenu(menus.Menu):
             embed.add_field(
                 name=f'{CATEGORY} Set the category ({category})',
                 value='Lets you change the category new channels are created in.\n',
-                inline=False
+                inline=False,
             )
             await self.message.edit(embed=embed)
             self.help = True
@@ -251,7 +251,7 @@ class Settings(commands.Cog):
         await ctx.bot.configs.save()
         await ctx.safe_send(
             msg=f'A new category and a new channel have been created. Join `{channel.name}` and try it out.',
-            color=discord.Color.green()
+            color=discord.Color.green(),
         )
 
     @commands.command(aliases=['channel'])
@@ -270,7 +270,7 @@ class Settings(commands.Cog):
                 await ctx.bot.configs.save()
                 await ctx.safe_send(
                     msg='Channel has been added.',
-                    color=discord.Color.green()
+                    color=discord.Color.green(),
                 )
 
     @commands.command()
@@ -284,7 +284,7 @@ class Settings(commands.Cog):
         else:
             await ctx.safe_send(
                 msg='Channel has been removed.',
-                color=discord.Color.green()
+                color=discord.Color.green(),
             )
 
     @commands.command()
@@ -303,7 +303,7 @@ class Settings(commands.Cog):
         configs = ctx.bot.configs.copy()
         channels = [c for c in ctx.guild.voice_channels if str(c.id) in configs]
         if len(channels) == 0:
-            raise commands.CommandError('You haven\'t added any Channels yet.')
+            raise commands.CommandError("You haven't added any Channels yet.")
         else:
             perms = ctx.channel.permissions_for(ctx.guild.me)
             if not perms.embed_links:
@@ -311,11 +311,11 @@ class Settings(commands.Cog):
             embed = discord.Embed(
                 title='Auto-channels',
                 description='Here is a list with all auto-channels in this server.',
-                color=discord.Color.blue()
+                color=discord.Color.blue(),
             )
             for channel in channels:
                 settings = configs[str(channel.id)]
-                name = settings.get('name', '@user\'s channel')
+                name = settings.get('name', "@user's channel")
                 limit = settings.get('limit', 10)
                 position = 'top' if settings.get('top', False) else 'bottom'
                 bitrate = settings.get('limit', 64000) // 1000
@@ -334,7 +334,7 @@ class Settings(commands.Cog):
                           f'Limit: `{limit}`\n'
                           f'Bitrate: `{bitrate}`kbps\n'
                           f'Position: at the {position}',
-                    inline=False
+                    inline=False,
                 )
             await ctx.send(embed=embed)
 
@@ -344,7 +344,7 @@ class Settings(commands.Cog):
         """Changes the bot's prefix on the server."""
         if prefix is None:
             pfx = ctx.bot.prefixes.get(str(ctx.guild.id), 'dvc!')
-            msg = f'The bot\'s prefix on this server is `{pfx}`.'
+            msg = f"The bot's prefix on this server is `{pfx}`."
         else:
             if prefix == 'dvc!':
                 try:
@@ -356,7 +356,7 @@ class Settings(commands.Cog):
             else:
                 ctx.bot.prefixes[str(ctx.guild.id)] = prefix
                 await ctx.bot.prefixes.save()
-            msg = f'Changed the bot\'s prefix to `{prefix}`.'
+            msg = f"Changed the bot's prefix to `{prefix}`."
         await ctx.safe_send(msg=msg, color=ctx.guild.me.color)
 
     @commands.command()
@@ -371,10 +371,10 @@ class Settings(commands.Cog):
             if words:
                 await ctx.safe_send(
                     msg=' '.join(f'||{w}||' for w in words),
-                    color=ctx.guild.me.color
+                    color=ctx.guild.me.color,
                 )
             else:
-                raise commands.CommandError('You haven\'t added any words yet.')
+                raise commands.CommandError("You haven't added any words yet.")
         else:
             if word in words:
                 raise commands.BadArgument('This word is already blacklisted.')
@@ -384,7 +384,7 @@ class Settings(commands.Cog):
                 await ctx.bot.bad_words.save()
                 await ctx.safe_send(
                     msg='The word has been Blacklisted.',
-                    color=discord.Color.green()
+                    color=discord.Color.green(),
                 )
 
     @commands.command()
@@ -401,7 +401,7 @@ class Settings(commands.Cog):
             await ctx.bot.bad_words.save()
             await ctx.safe_send(
                 msg='Removed the word from the Blacklist.',
-                color=discord.Color.green()
+                color=discord.Color.green(),
             )
         else:
             raise commands.BadArgument('This word is not blacklisted.')

@@ -14,11 +14,10 @@ from utils.context import Context
 from utils.jsonfile import JSONDict, JSONList
 
 extensions = (
-    "cogs.settings",
-    "cogs.core",
-    "cogs.voice",
+    'cogs.settings',
+    'cogs.core',
+    'cogs.voice',
 )
-
 
 intents = discord.Intents.none()
 intents.guilds = True
@@ -37,7 +36,7 @@ class Bot(commands.Bot):
             help_command=HelpCommand(),
             case_insensitive=True,
             owner_id=settings.owner_id,
-            activity=discord.Activity(type=discord.ActivityType.listening, name=settings.command_prefix)
+            activity=discord.Activity(type=discord.ActivityType.listening, name=settings.command_prefix),
         )
         self.launched_at = None
         self.client_id = settings.bot_client_id
@@ -109,7 +108,7 @@ class Bot(commands.Bot):
     async def on_voice_join(self, member, channel):
         if member.id in self.blacklist:
             return
-        if not str(channel.id) in self.configs:
+        if str(channel.id) not in self.configs:
             return
         perms = member.guild.me.guild_permissions
         if not perms.manage_channels or not perms.move_members:
@@ -128,7 +127,7 @@ class Bot(commands.Bot):
                 await member.send(f'You are being rate limited. Try again in `{retry_after:.2f}` seconds.')
         else:
             configuration = self.configs[str(channel.id)]
-            name = configuration.get('name', '@user\'s channel')
+            name = configuration.get('name', "@user's channel")
             limit = configuration.get('limit', 10)
             bitrate = configuration.get('bitrate', 64000)
             top = configuration.get('top', False)
@@ -166,7 +165,7 @@ class Bot(commands.Bot):
                 name=name,
                 category=category,
                 user_limit=limit,
-                bitrate=bitrate
+                bitrate=bitrate,
             )
             if top:
                 self.loop.create_task(new_channel.edit(position=0))
@@ -175,15 +174,14 @@ class Bot(commands.Bot):
             await self.channels.save()
 
     async def on_voice_leave(self, channel):
-        if channel.id in self.channels:
-            if len(channel.members) == 0:
-                ch = channel.guild.get_channel(channel.id)
-                if ch is not None:
-                    perms = channel.permissions_for(channel.guild.me)
-                    if perms.manage_channels:
-                        await channel.delete()
-                self.channels.remove(channel.id)
-                await self.channels.save()
+        if channel.id in self.channels and len(channel.members) == 0:
+            ch = channel.guild.get_channel(channel.id)
+            if ch is not None:
+                perms = channel.permissions_for(channel.guild.me)
+                if perms.manage_channels:
+                    await channel.delete()
+            self.channels.remove(channel.id)
+            await self.channels.save()
 
     async def on_guild_channel_delete(self, channel):
         if str(channel.id) in self.configs:
@@ -241,7 +239,7 @@ class Bot(commands.Bot):
                     with suppress(discord.HTTPException):
                         await owner.send(embed=discord.Embed(
                             description=f'```py\n{tb}```',
-                            color=discord.Color.red()
+                            color=discord.Color.red(),
                         ))
             else:
                 if isinstance(error, commands.CommandInvokeError):
@@ -249,5 +247,5 @@ class Bot(commands.Bot):
                 await ctx.safe_send(msg=str(error).capitalize(), color=discord.Color.red())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     Bot().run(settings.discord_token)

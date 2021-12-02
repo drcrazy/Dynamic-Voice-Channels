@@ -9,7 +9,7 @@ class HelpSource(menus.GroupByPageSource):
         embed = discord.Embed(
             title=f'{entry.key.title()} commands',
             description=f'Use `{menu.ctx.prefix}{menu.ctx.invoked_with} <command>` for more info on a command.',
-            color=menu.ctx.guild.me.color
+            color=menu.ctx.guild.me.color,
         )
         embed.set_thumbnail(url=menu.ctx.bot.user.avatar_url)
         embed.set_footer(text=f'Page {menu.current_page + 1} of {self.get_max_pages()}')
@@ -26,7 +26,7 @@ class HelpCommand(commands.HelpCommand):
         super().__init__(command_attrs={
             'aliases': ['h', 'commands'],
             'max_concurrency': commands.MaxConcurrency(2, per=commands.BucketType.member, wait=False),
-            'help': 'Starts an interactive session with a list of all available commands.'
+            'help': 'Starts an interactive session with a list of all available commands.',
         }, verify_checks=False)
 
     def command_not_found(self, string):

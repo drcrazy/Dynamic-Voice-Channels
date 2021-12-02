@@ -34,7 +34,7 @@ class Core(commands.Cog):
             move_members=True,
             manage_channels=True,
             manage_messages=True,
-            manage_roles=True
+            manage_roles=True,
         ))
         perms = ctx.channel.permissions_for(ctx.guild.me)
         if perms.embed_links:
@@ -42,7 +42,7 @@ class Core(commands.Cog):
             await ctx.send(embed=discord.Embed(
                 title=':envelope: Invite links',
                 description=f'[Invite (recommended)]({best_perms})\n[Invite (no permissions)]({no_perms})',
-                color=ctx.guild.me.color
+                color=ctx.guild.me.color,
             ))
         else:
             await ctx.send(best_perms)
@@ -77,9 +77,7 @@ class Core(commands.Cog):
         """Sends a message to the bots owner. Do not abuse."""
         owner = await fetch_owner(ctx.bot)
         if owner:
-            embed = discord.Embed(
-                description=message
-            )
+            embed = discord.Embed(description=message)
             embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
             await owner.send(embed=embed)
             await ctx.safe_send('Message has been sent. Thank you!', discord.Color.green())
