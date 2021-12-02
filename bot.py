@@ -118,58 +118,39 @@ class Bot(commands.Bot):
         bucket = self.voice_spam_control.get_bucket(fake_message)
         retry_after = bucket.update_rate_limit()
         if retry_after:
-            self.voice_spam_counter[member.id] += 1
-            if self.voice_spam_counter[member.id] >= 5:
-                del self.text_spam_counter[member.id]
-                self.blacklist.append(member.id)
-                await self.blacklist.save()
-            with suppress(discord.Forbidden):
-                await member.send(f'You are being rate limited. Try again in `{retry_after:.2f}` seconds.')
-        else:
-            configuration = self.configs[str(channel.id)]
-            name = configuration.get('name', "@user's channel")
-            limit = configuration.get('limit', 10)
-            bitrate = configuration.get('bitrate', 64000)
-            top = configuration.get('top', False)
-            try:
-                category = member.guild.get_channel(configuration['category'])
-            except KeyError:
-                category = channel.category
-            if '@user' in name:
-                name = name.replace('@user', member.display_name)
-            if '@game' in name:
-                for activity in member.activities:
-                    if activity.type == discord.ActivityType.playing and activity.name is not None:
-                        name = name.replace('@game', activity.name)
-                        break
-                else:
-                    name = name.replace('@game', 'no game')
-            if '@position' in name:
-                channels = [c for c in category.voice_channels if c.id in self.channels]
-                name = name.replace('@position', str(len(channels) + 1))
-            words = self.bad_words.get(str(member.guild.id), [])
-            for word in words:
-                if word.casefold() in name.casefold():
-                    name = re.sub(word, '*' * len(word), name, flags=re.IGNORECASE)
-            if len(name) > 100:
-                name = name[:97] + '...'
-            if perms.manage_roles:
-                overwrites = {member: discord.PermissionOverwrite(manage_channels=True, move_members=True)}
-            else:
-                overwrites = None
+            await self._limit_rate(member, retry_after)
+            return
 
-            new_channel = await member.guild.create_voice_channel(
-                overwrites=overwrites,
-                name=name,
-                category=category,
-                user_limit=limit,
-                bitrate=bitrate,
-            )
-            if top:
-                self.loop.create_task(new_channel.edit(position=0))
-            await member.move_to(new_channel)
-            self.channels.append(new_channel.id)
-            await self.channels.save()
+        configuration = self.configs[str(channel.id)]
+        name = configuration.get('name', "@user's channel")
+        limit = configuration.get('limit', 10)
+        bitrate = configuration.get('bitrate', 64000)
+        top = configuration.get('top', False)
+        try:
+            category = member.guild.get_channel(configuration['category'])
+        except KeyError:
+            category = channel.category
+
+        name = self._make_channel_name(name, member, category)
+
+        if perms.manage_roles:
+            overwrites = {member: discord.PermissionOverwrite(manage_channels=True, move_members=True)}
+        else:
+            overwrites = None
+
+        new_channel = await member.guild.create_voice_channel(
+            overwrites=overwrites,
+            name=name,
+            category=category,
+            user_limit=limit,
+            bitrate=bitrate,
+        )
+        if top:
+            self.loop.create_task(new_channel.edit(position=0))
+
+        await member.move_to(new_channel)
+        self.channels.append(new_channel.id)
+        await self.channels.save()
 
     async def on_voice_leave(self, channel):
         if channel.id in self.channels and len(channel.members) == 0:
@@ -243,6 +224,40 @@ class Bot(commands.Bot):
                 if isinstance(error, commands.CommandInvokeError):
                     error = error.original
                 await ctx.safe_send(msg=str(error).capitalize(), color=discord.Color.red())
+
+    async def _limit_rate(self, member, retry_after):
+        self.voice_spam_counter[member.id] += 1
+
+        if self.voice_spam_counter[member.id] >= 5:
+            del self.text_spam_counter[member.id]
+            self.blacklist.append(member.id)
+            await self.blacklist.save()
+        with suppress(discord.Forbidden):
+            await member.send(f'You are being rate limited. Try again in `{retry_after:.2f}` seconds.')
+
+    def _make_channel_name(self, name, member, category):
+        if '@user' in name:
+            name = name.replace('@user', member.display_name)
+        if '@game' in name:
+            for activity in member.activities:
+                if activity.type == discord.ActivityType.playing and activity.name is not None:
+                    name = name.replace('@game', activity.name)
+                    break
+            else:
+                name = name.replace('@game', 'no game')
+        if '@position' in name:
+            channels = [c for c in category.voice_channels if c.id in self.channels]
+            name = name.replace('@position', str(len(channels) + 1))
+
+        words = self.bad_words.get(str(member.guild.id), [])
+        for word in words:
+            if word.casefold() in name.casefold():
+                name = re.sub(word, '*' * len(word), name, flags=re.IGNORECASE)
+
+        if len(name) > 100:
+            name = name[:97] + '...'
+
+        return name
 
 
 if __name__ == '__main__':
