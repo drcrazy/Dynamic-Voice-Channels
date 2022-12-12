@@ -20,25 +20,26 @@ async def fetch_owner(bot):
 class Core(commands.Cog):
     @commands.command(aliases=['join'])
     async def invite(self, ctx):
-        """Gives you the bot's invite link.
-        If you don't want the bot to create its own role or you want to set the permissions yourself,
+        """Gives you the bot invite link.
+        If you don't want the bot to create its own role, or you want to set the permissions yourself,
         use the invite without permissions. But don't forget that it won't work without these permissions.
         """
-        best_perms = discord.utils.oauth_url(ctx.bot.client_id, discord.Permissions(
-            read_messages=True,
-            read_message_history=True,
-            send_messages=True,
-            embed_links=True,
-            add_reactions=True,
-            external_emojis=True,
-            move_members=True,
-            manage_channels=True,
-            manage_messages=True,
-            manage_roles=True,
-        ))
-        perms = ctx.channel.permissions_for(ctx.guild.me)
-        if perms.embed_links:
-            no_perms = discord.utils.oauth_url(ctx.bot.client_id, discord.Permissions.none())
+        perms = discord.Permissions.none()
+        perms.read_messages = True
+        perms.read_message_history = True
+        perms.send_messages = True
+        perms.embed_links = True
+        perms.add_reactions = True
+        perms.external_emojis = True
+        perms.move_members = True
+        perms.manage_channels = True
+        perms.manage_messages = True
+        perms.manage_roles = True
+
+        best_perms = discord.utils.oauth_url(ctx.bot.client_id, permissions=perms)
+        current_perms = ctx.channel.permissions_for(ctx.guild.me)
+        if current_perms.embed_links:
+            no_perms = discord.utils.oauth_url(ctx.bot.client_id, permissions=discord.Permissions.none())
             await ctx.send(embed=discord.Embed(
                 title=':envelope: Invite links',
                 description=f'[Invite (recommended)]({best_perms})\n[Invite (no permissions)]({no_perms})',
@@ -73,8 +74,8 @@ class Core(commands.Cog):
 
     @commands.command(aliases=['suggest'])
     @commands.cooldown(1, 120, commands.BucketType.member)
-    async def support(self, ctx, *, message: StrRange(0, 2000)):
-        """Sends a message to the bots owner. Do not abuse."""
+    async def support(self, ctx, *, message: StrRange[0, 2000]):
+        """Sends a message to the bot owner. Do not abuse."""
         owner = await fetch_owner(ctx.bot)
         if owner:
             embed = discord.Embed(description=message)
@@ -85,5 +86,5 @@ class Core(commands.Cog):
             await ctx.safe_send('The owner could not be determined.', discord.Color.red())
 
 
-def setup(bot):
-    bot.add_cog(Core())
+async def setup(bot):
+    await bot.add_cog(Core())

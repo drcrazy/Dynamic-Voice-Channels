@@ -1,12 +1,12 @@
 import datetime
 import os
 import re
-import traceback
 from collections import Counter
 from contextlib import suppress
 
 import discord
-from discord.ext import commands, menus
+from discord.ext import commands
+from discord.ext.commands import CommandError
 
 from cogs.help import HelpCommand
 from utils.config import settings
@@ -26,6 +26,7 @@ intents.voice_states = True
 intents.presences = True
 intents.guild_messages = True
 intents.guild_reactions = True
+intents.message_content = True
 
 
 class Bot(commands.Bot):
@@ -56,8 +57,13 @@ class Bot(commands.Bot):
         self.text_spam_control = commands.CooldownMapping.from_cooldown(8, 10, commands.BucketType.user)
         self.text_spam_counter = Counter()
 
+    async def setup_hook(self) -> None:
         for extension in extensions:
-            self.load_extension(extension)
+            # noinspection PyBroadException
+            try:
+                await self.load_extension(extension)
+            except Exception:
+                print(f'Failed to load extension {extension}.')
 
     async def on_ready(self):
         if self.launched_at is None:
@@ -95,7 +101,7 @@ class Bot(commands.Bot):
                 await self.blacklist.save()
             await ctx.send(f'You are being rate limited. Try again in `{retry_after:.2f}` seconds.')
         else:
-            self.text_spam_counter.pop(message.author.id, None)
+            self.text_spam_counter.pop(message.author.id)
             await self.invoke(ctx)
 
     async def on_voice_state_update(self, member, before, after):
@@ -204,26 +210,8 @@ class Bot(commands.Bot):
         if guild.id in self.blacklist:
             await guild.leave()
 
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandNotFound):
-            return
-        else:
-            ctx.command.reset_cooldown(ctx)
-            if isinstance(error, commands.CommandInvokeError) and not isinstance(error.original, menus.MenuError):
-                error = error.original
-                traceback.print_exception(error.__class__.__name__, error, error.__traceback__)
-                owner = self.get_user(self.owner_id)
-                if owner is not None:
-                    tb = '\n'.join(traceback.format_exception(error.__class__.__name__, error, error.__traceback__))
-                    with suppress(discord.HTTPException):
-                        await owner.send(embed=discord.Embed(
-                            description=f'```py\n{tb}```',
-                            color=discord.Color.red(),
-                        ))
-            else:
-                if isinstance(error, commands.CommandInvokeError):
-                    error = error.original
-                await ctx.safe_send(msg=str(error).capitalize(), color=discord.Color.red())
+    async def on_command_error(self, ctx: Context, exception: CommandError) -> None:
+        await ctx.send(str(exception), ephemeral=True)
 
     async def _limit_rate(self, member, retry_after):
         self.voice_spam_counter[member.id] += 1

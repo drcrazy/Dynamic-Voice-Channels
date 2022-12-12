@@ -20,7 +20,7 @@ class Voice(commands.Cog):
     @bot_has_voice_permissions(manage_channels=True)
     @has_voice_permissions(manage_channels=True)
     @connected_to_voice()
-    async def name(self, ctx, *, name: StrRange(2, 100)):
+    async def name(self, ctx, *, name: StrRange[2, 100]):
         """Sets your voice channel's name.
         The name needs to be between 2 and 100 characters in length.
         """
@@ -39,7 +39,7 @@ class Voice(commands.Cog):
     @bot_has_voice_permissions(manage_channels=True)
     @has_voice_permissions(manage_channels=True)
     @connected_to_voice()
-    async def limit(self, ctx, number: IntRange(0, 99)):
+    async def limit(self, ctx, number: IntRange[0, 99]):
         """Sets your voice channel's user limit.
         The limit has to be in range of 0 to 99.
         Use 0 to remove the user limit.
@@ -55,7 +55,7 @@ class Voice(commands.Cog):
     @bot_has_voice_permissions(manage_channels=True)
     @has_voice_permissions(manage_channels=True)
     @connected_to_voice()
-    async def bitrate(self, ctx, number: IntRange(8000, 384000)):
+    async def bitrate(self, ctx, number: IntRange[8000, 384000]):
         """Sets your voice channel's bitrate.
         The bitrate has to be in range of 8000 to your server's bitrate limit.
         """
@@ -310,5 +310,5 @@ class Voice(commands.Cog):
             )
 
 
-def setup(bot):
-    bot.add_cog(Voice())
+async def setup(bot):
+    await bot.add_cog(Voice())

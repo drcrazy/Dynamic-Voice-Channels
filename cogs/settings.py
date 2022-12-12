@@ -343,10 +343,10 @@ class Settings(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_guild=True)
     async def prefix(self, ctx, prefix=None):
-        """Changes the bot's prefix on the server."""
+        """Changes the bot prefix on the server."""
         if prefix is None:
             pfx = ctx.bot.prefixes.get(str(ctx.guild.id), 'dvc!')
-            msg = f"The bot's prefix on this server is `{pfx}`."
+            msg = f"The bot prefix on this server is `{pfx}`."
         else:
             if prefix == 'dvc!':
                 try:
@@ -358,7 +358,7 @@ class Settings(commands.Cog):
             else:
                 ctx.bot.prefixes[str(ctx.guild.id)] = prefix
                 await ctx.bot.prefixes.save()
-            msg = f"Changed the bot's prefix to `{prefix}`."
+            msg = f"Changed the bot prefix to `{prefix}`."
         await ctx.safe_send(msg=msg, color=ctx.guild.me.color)
 
     @commands.command()
@@ -410,5 +410,5 @@ class Settings(commands.Cog):
         )
 
 
-def setup(bot):
-    bot.add_cog(Settings())
+async def setup(bot):
+    await bot.add_cog(Settings())
